@@ -8,8 +8,8 @@ allowed-tools: Read, Write, Edit, Bash(git:*, ls:*, mkdir:*, cp:*, test:*, date:
 ## Context
 
 - Current directory: !`pwd`
-- Git status: !`git status --porcelain 2>/dev/null || echo "NOT_GIT"`
-- Existing conductor setup: !`test -d conductor && echo "EXISTS" || echo "NEW"`
+- Git status: !`git status --porcelain`
+- Existing conductor setup: !`ls -d conductor 2>/dev/null`
 
 ## 1.0 SYSTEM DIRECTIVE
 
