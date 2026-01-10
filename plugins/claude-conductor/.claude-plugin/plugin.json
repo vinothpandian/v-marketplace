@@ -1,0 +1,10 @@
+{
+  "name": "claude-conductor",
+  "version": "1.0.0",
+  "description": "Context-Driven Development framework - plan, specify, and implement software features with AI assistance",
+  "author": {
+    "name": "V-Marketplace Contributors"
+  },
+  "license": "Apache-2.0",
+  "keywords": ["tdd", "planning", "specifications", "context-driven", "workflow"]
+}
