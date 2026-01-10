@@ -5,13 +5,12 @@
   },
   "metadata": {
     "description": "A collection of Claude Code plugins for enhanced development workflows",
-    "version": "1.0.0",
-    "pluginRoot": "./plugins"
+    "version": "1.0.0"
   },
   "plugins": [
     {
       "name": "claude-conductor",
-      "source": "claude-conductor",
+      "source": "./plugins/claude-conductor",
       "description": "Context-Driven Development framework - plan, specify, and implement software features with AI assistance",
       "version": "1.0.0",
       "author": {
