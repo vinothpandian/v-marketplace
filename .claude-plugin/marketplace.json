@@ -1,0 +1,25 @@
+{
+  "name": "v-marketplace",
+  "owner": {
+    "name": "V-Marketplace Contributors"
+  },
+  "metadata": {
+    "description": "A collection of Claude Code plugins for enhanced development workflows",
+    "version": "1.0.0",
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "claude-conductor",
+      "source": "claude-conductor",
+      "description": "Context-Driven Development framework - plan, specify, and implement software features with AI assistance",
+      "version": "1.0.0",
+      "author": {
+        "name": "V-Marketplace Contributors"
+      },
+      "license": "Apache-2.0",
+      "keywords": ["tdd", "planning", "specifications", "context-driven", "workflow"],
+      "category": "development"
+    }
+  ]
+}

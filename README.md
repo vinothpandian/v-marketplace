@@ -1,8 +1,26 @@
 # V-Marketplace
 
-A collection of Claude Code plugins for enhanced development workflows.
+A Claude Code plugin marketplace with enhanced development workflow tools.
 
-## Plugins
+## Installation
+
+Add this marketplace to Claude Code:
+
+```bash
+# From GitHub (when hosted)
+/plugin marketplace add your-username/v-marketplace
+
+# From local path
+/plugin marketplace add /path/to/v-marketplace
+```
+
+Then install plugins:
+
+```bash
+/plugin install claude-conductor@v-marketplace
+```
+
+## Available Plugins
 
 ### claude-conductor
 
@@ -17,12 +35,13 @@ Context-Driven Development framework that transforms your repository into a sing
 - `/claude-conductor:status` - View project progress and track status
 - `/claude-conductor:revert` - Git-aware rollback of tracks, phases, or tasks
 
-## Installation
+## Adding New Plugins
 
-```bash
-# Install a plugin from this marketplace
-claude plugins install /path/to/v-marketplace/plugins/claude-conductor
-```
+1. Create a new directory under `plugins/your-plugin-name/`
+2. Add a `.claude-plugin/plugin.json` manifest
+3. Add your plugin entry to `.claude-plugin/marketplace.json`
+
+See the [Plugin Documentation](https://docs.anthropic.com/en/docs/claude-code/plugins) for details.
 
 ## License
 
