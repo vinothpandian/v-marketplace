@@ -6,21 +6,14 @@
         "matcher": "*",
         "hooks": [
           {
-            "type": "prompt",
-            "prompt": "Before stopping, verify: If this was a Conductor /implement session, check that (1) all in-progress tasks are properly marked in plan.md, (2) the plan reflects current state, (3) any phase completion protocols were followed. If verification fails, explain what needs to be done before stopping. Return 'approve' to stop or 'block' with specific remaining actions.",
-            "timeout": 30
-          }
-        ]
-      }
-    ],
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
+            "type": "command",
+            "command": "test -d conductor",
+            "onFailure": "approve"
+          },
           {
             "type": "prompt",
-            "prompt": "If editing a conductor plan.md file: Verify status markers are valid ([ ], [~], [x]) and properly formatted with correct indentation. If editing code during /implement: Confirm that corresponding test files exist or are being created per TDD workflow. Provide brief feedback if issues detected, otherwise approve silently.",
-            "timeout": 15
+            "prompt": "Before stopping this Conductor session, verify: (1) All in-progress tasks are properly marked in plan.md with correct status markers ([ ], [~], [x]). (2) The plan reflects the current implementation state. (3) Any phase completion protocols from workflow.md were followed. (4) Code changes have corresponding test files per TDD workflow. If verification fails, explain what needs to be done before stopping. Return 'approve' to stop or 'block' with specific remaining actions.",
+            "timeout": 30
           }
         ]
       }
