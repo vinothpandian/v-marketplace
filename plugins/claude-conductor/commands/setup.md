@@ -1,6 +1,6 @@
 ---
 description: Scaffolds the project and sets up the Conductor environment
-allowed-tools: Read, Write, Edit, Bash(git:*, ls:*, mkdir:*, cp:*, test:*, date:*)
+allowed-tools: Read, Write, Edit, Bash(git:*, ls:*, mkdir:*, cp:*, test:*, date:*), mcp__claude_ai_Linear__list_teams, mcp__claude_ai_Linear__list_projects, mcp__claude_ai_Linear__save_issue, mcp__claude_ai_Linear__get_team
 ---
 
 # Conductor Setup
@@ -35,7 +35,8 @@ You are an AI agent. Your primary function is to set up and manage a software pr
    - If `STEP` is "2.2_product_guidelines", announce "Resuming setup: The Product Guide and Product Guidelines are complete. Next, we will define the Technology Stack." and proceed to **Section 2.3**.
    - If `STEP` is "2.3_tech_stack", announce "Resuming setup: The Product Guide, Guidelines, and Tech Stack are defined. Next, we will select Code Styleguides." and proceed to **Section 2.4**.
    - If `STEP` is "2.4_code_styleguides", announce "Resuming setup: All guides and the tech stack are configured. Next, we will define the project workflow." and proceed to **Section 2.5**.
-   - If `STEP` is "2.5_workflow", announce "Resuming setup: The initial project scaffolding is complete. Next, we will generate the first track." and proceed to **Phase 2 (3.0)**.
+   - If `STEP` is "2.5_workflow", announce "Resuming setup: The initial project scaffolding is complete. Next, we will configure the Linear integration." and proceed to **Section 2.6**.
+   - If `STEP` is "2.6_linear_integration", announce "Resuming setup: The initial project scaffolding is complete. Next, we will generate the first track." and proceed to **Phase 2 (3.0)**.
    - If `STEP` is "3.3_initial_track_generated":
      - Announce: "The project has already been initialized. You can create a new track with `/claude-conductor:new-track` or start implementing existing tracks with `/claude-conductor:implement`."
      - Halt the `setup` process.
@@ -359,11 +360,48 @@ You are an AI agent. Your primary function is to set up and manage a software pr
      - **Commit State:** After the `workflow.md` file is successfully written or updated, you MUST immediately write to `conductor/setup_state.json` with the exact content:
        `{"last_successful_step": "2.5_workflow"}`
 
-### 2.6 Finalization
+### 2.6 Linear Integration (Optional)
+
+1. **Introduce the Section:** Announce that Conductor can optionally sync tracks with Linear for issue tracking.
+
+2. **Ask the user:**
+   > "Would you like to integrate this project with Linear for issue tracking?
+   > A) Yes — link to a Linear team and project
+   > B) No — skip Linear integration"
+
+3. **If No (Option B):**
+   - Execute `mkdir -p conductor/integrations` and write `conductor/integrations/linear.json` with content: `{"enabled": false}`
+   - Write `conductor/setup_state.json` with content: `{"last_successful_step": "2.6_linear_integration"}`
+   - Proceed to Section 2.7 (Finalization).
+
+4. **If Yes (Option A):**
+   a. **Fetch Teams:** Call `mcp__claude_ai_Linear__list_teams` to get the user's Linear teams.
+      - If the call fails (e.g., auth error), inform the user: "Linear integration is not available — the Linear MCP server may not be authenticated. Please authenticate via Claude Code settings and re-run setup, or choose 'No' to continue without Linear." Then treat this as if the user selected **Option B** and proceed to Section 2.7.
+   b. **Present Teams:** Show the returned teams as a numbered list and ask the user to select one by number.
+   c. **Fetch Projects:** Call `mcp__claude_ai_Linear__list_projects` (filtered by the selected team ID) to get that team's projects.
+   d. **Present Projects:** Show the returned projects as a numbered list, plus a final option: "No project — create issues at the team level only". Ask the user to select one.
+   e. **Save Config:** Execute `mkdir -p conductor/integrations` and write `conductor/integrations/linear.json` with content:
+      ```json
+      {
+        "enabled": true,
+        "team_id": "<selected_team_id>",
+        "team_name": "<selected_team_name>",
+        "project_id": "<selected_project_id_or_null>",
+        "project_name": "<selected_project_name_or_null>"
+      }
+      ```
+      Use `null` for `project_id` and `project_name` if the user chose "No project".
+   f. **Confirm:** Announce "Linear integration configured: [Team Name] / [Project Name or 'Team-level']."
+   g. **Commit State:** Write `conductor/setup_state.json` with content: `{"last_successful_step": "2.6_linear_integration"}`
+
+5. **Continue:** Proceed to Section 2.7 (Finalization).
+
+### 2.7 Finalization
 
 1. **Summarize Actions:** Present a summary of all actions taken during Phase 1, including:
    - The guide files that were copied.
    - The workflow file that was copied.
+   - Whether Linear integration was configured.
 
 2. **Transition to initial plan and track generation:** Announce that the initial setup is complete and you will now proceed to define the first track for the project.
 
@@ -463,16 +501,31 @@ You are an AI agent. Your primary function is to set up and manage a software pr
            "status": "new",
            "created_at": "YYYY-MM-DDTHH:MM:SSZ",
            "updated_at": "YYYY-MM-DDTHH:MM:SSZ",
-           "description": "<Initial user description>"
+           "description": "<Initial user description>",
+           "linear_issue_id": null,
+           "linear_issue_url": null
          }
          ```
-         Populate fields with actual values. Use the current timestamp.
+         Populate fields with actual values. Use the current timestamp. Leave `linear_issue_id` and `linear_issue_url` as `null` initially — they are updated in step (d) if Linear integration is enabled.
       iv. **Write Spec and Plan Files:** In the exact same directory, write the generated `spec.md` and `plan.md` files.
 
-   d. **Commit State:** After all track artifacts have been successfully written, you MUST immediately write to `conductor/setup_state.json` with the exact content:
+   d. **Linear Issue Creation (if configured):**
+      - Check if `conductor/integrations/linear.json` exists and read it.
+      - If `enabled` is `true`:
+        i. Call `mcp__claude_ai_Linear__save_issue` with:
+           - `teamId`: `team_id` from the config
+           - `title`: the track description
+           - `description`: a brief summary from the generated `spec.md` (the Overview/Scope section, 2–3 sentences)
+           - `projectId`: `project_id` from the config (omit this field if `project_id` is `null`)
+        ii. On success: update `metadata.json` to add `"linear_issue_id"` and `"linear_issue_url"` fields using the values returned by the MCP call.
+        iii. Announce: "Linear issue created: [issue title] — [issue URL]"
+        iv. On failure: announce the error (e.g., "Warning: Could not create Linear issue — [error]") but **do not halt**. The track is already created locally; Linear sync is non-critical.
+      - If `conductor/integrations/linear.json` does not exist or `enabled` is `false`, skip this step silently.
+
+   e. **Commit State:** After all track artifacts have been successfully written, you MUST immediately write to `conductor/setup_state.json` with the exact content:
       `{"last_successful_step": "3.3_initial_track_generated"}`
 
-   e. **Announce Progress:** Announce that the track for "<Track Description>" has been created.
+   f. **Announce Progress:** Announce that the track for "<Track Description>" has been created.
 
 ### 3.4 Final Announcement
 
@@ -480,4 +533,4 @@ You are an AI agent. Your primary function is to set up and manage a software pr
 
 2. **Save Conductor Files:** Add and commit all files with the commit message `conductor(setup): Add conductor setup files`.
 
-3. **Next Steps:** Inform the user that they can now begin work by running `/claude-conductor:implement`.
+3. **Next Steps:** Inform the user that they can now begin work by running `/claude-conductor:implement`. If Linear integration is enabled, mention that the initial track has been synced as a Linear issue, and that future tracks created with `/claude-conductor:new-track` can be enhanced to sync with Linear as well (by reading `conductor/integrations/linear.json`).
