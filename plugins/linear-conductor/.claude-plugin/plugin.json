@@ -1,0 +1,10 @@
+{
+  "name": "linear-conductor",
+  "version": "1.0.0",
+  "description": "Context-Driven Development framework with built-in Linear integration — plan, specify, and implement software features with AI assistance, synced to Linear issues automatically",
+  "author": {
+    "name": "V-Marketplace Contributors"
+  },
+  "license": "Apache-2.0",
+  "keywords": ["tdd", "planning", "specifications", "context-driven", "workflow", "linear", "issue-tracking"]
+}
