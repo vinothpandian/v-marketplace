@@ -7,13 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "test -d conductor",
-            "onFailure": "approve"
-          },
-          {
-            "type": "prompt",
-            "prompt": "Before stopping this Conductor session, verify: (1) All in-progress tasks are properly marked in plan.md with correct status markers ([ ], [~], [x]). (2) The plan reflects the current implementation state. (3) Any phase completion protocols from workflow.md were followed. (4) Code changes have corresponding test files per TDD workflow. If verification fails, explain what needs to be done before stopping. Return 'approve' to stop or 'block' with specific remaining actions.",
-            "timeout": 30
+            "command": "bash \"${CLAUDE_PLUGIN_ROOT}/hooks/stop-check.sh\""
           }
         ]
       }
